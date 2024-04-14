@@ -1,0 +1,7 @@
+Your semantic analysis should pass for all files that have suffix "good" 
+in the their name.
+For files with suffix "bad" in their name, here are the errors:
+1. p1_bad: Parameter i is also declared as a variable. 
+2. p2_bad: Variable b is used without declaration.
+3. p3_bad: Variable c is used outside the scope of the declaration in the return statement.
+4. p4_bad: Variable a is used before it is defined in a nested scope. 
