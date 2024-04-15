@@ -1,6 +1,7 @@
 %{
 #include <cstdio>
 #include "ast.h"
+#include "part1_semantic.cpp"
 extern int yylex();
 extern int yylex_destroy();
 void yyerror(const char *);
@@ -44,12 +45,25 @@ program:
     }
 
 extern_declaration:
-    EXTERN VOID IDENTIFIER '(' INT ')' ';' { $$ = createExtern($3); }
-  | EXTERN INT IDENTIFIER '(' ')' ';' { $$ = createExtern($3); }
+    EXTERN VOID IDENTIFIER '(' INT ')' ';' {
+        $$ = createExtern($3);
+        free($3);
+    }
+  | EXTERN INT IDENTIFIER '(' ')' ';' {
+        $$ = createExtern($3);
+        free($3);
+    }
 
 function:
-    INT IDENTIFIER '(' INT IDENTIFIER ')' block { $$ = createFunc($2, createVar($5), $7); }
-  | INT IDENTIFIER '(' ')' block { $$ = createFunc($2, nullptr, $5); }
+    INT IDENTIFIER '(' INT IDENTIFIER ')' block {
+        $$ = createFunc($2, createVar($5), $7);
+        free($2);
+        free($5);
+    }
+  | INT IDENTIFIER '(' ')' block {
+        $$ = createFunc($2, nullptr, $5);
+        free($2);
+    }
 
 block:
     '{' var_declarations statements '}' {
@@ -80,6 +94,7 @@ var_declarations:
 var_declaration:
     INT IDENTIFIER ';' {
         $$ = createDecl($2);
+        free($2);
     }
 
 statements:
@@ -97,6 +112,7 @@ statement:
   | block { $$ = $1; }
   | IDENTIFIER '=' expression ';' {
         $$ = createAsgn(createVar($1), $3);
+        free($1);
     }
   | IF '(' condition ')' statement ELSE statement {
         $$ = createIf($3, $5, $7);
@@ -125,8 +141,8 @@ expression:
   | arithmetic_expression { $$ = $1; }
 
 call_expression:
-    IDENTIFIER '(' ')' { $$ = createCall($1, nullptr); }
-  | IDENTIFIER '(' expression ')' { $$ = createCall($1, $3); }
+    IDENTIFIER '(' ')' { $$ = createCall($1, nullptr); free($1); }
+  | IDENTIFIER '(' expression ')' { $$ = createCall($1, $3); free($1); }
 
 arithmetic_expression:
     expression '+' expression { $$ = createBExpr($1, $3, add); }
@@ -137,7 +153,7 @@ arithmetic_expression:
 
 terminal:
     NUMBER { $$ = createCnst($1); }
-  | IDENTIFIER { $$ = createVar($1); }
+  | IDENTIFIER { $$ = createVar($1); free($1); }
 
 %%
 
@@ -149,6 +165,10 @@ int main(int argc, char** argv){
 	
     if (root != nullptr) {
         printNode(root);
+        SemanticAnalyzer sa;
+        if (!sa.analyze(root)) {
+            return 1;
+        }
         freeNode(root);
     }
 
@@ -162,4 +182,3 @@ int main(int argc, char** argv){
 void yyerror(const char *) {
     fprintf(stderr, "Syntax Error: line %d\n", yylineno);
 }
-
