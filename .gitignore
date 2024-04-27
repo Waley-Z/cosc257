@@ -7,3 +7,7 @@ y.tab.h
 *.out
 
 *.tar
+*.o
+llvm_parser
+test_new.ll
+test.ll

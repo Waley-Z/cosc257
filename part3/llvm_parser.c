@@ -36,30 +36,84 @@ LLVMModuleRef createLLVMModel(char* filename) {
     return m;
 }
 
-void walkBBInstructions(LLVMBasicBlockRef bb) {
-    for (LLVMValueRef instruction = LLVMGetFirstInstruction(bb); instruction;
-         instruction = LLVMGetNextInstruction(instruction)) {
-        // LLVMGetInstructionOpcode gives you LLVMOpcode that is a enum
-        LLVMOpcode op = LLVMGetInstructionOpcode(instruction);
+/* Checks if the instruction instB can be safely replaced by instA. */
+bool isSafeToReplace(LLVMValueRef instA, LLVMValueRef instB) {
+    if (!LLVMIsALoadInst(instA) && !LLVMIsALoadInst(instB)) {
+        return true;
+    }
 
-        // if (LLVMIsACallInst(instruction)) {
-        if (op == LLVMAdd) {
-            LLVMDumpValue(instruction);
-            if (LLVMIsConstant(LLVMGetOperand(instruction, 0)) &&
-                LLVMIsConstant(LLVMGetOperand(instruction, 1))) {
-                // Walking over all uses of an instruction
-                LLVMUseRef y = LLVMGetFirstUse(instruction);
-                if (y == NULL)
-                    printf("NULL\n");
-                else
-                    printf("\n Exploring user instructions:\n");
-                for (LLVMUseRef u = LLVMGetFirstUse(instruction);
-                     u;
-                     u = LLVMGetNextUse(u)) {
-                    LLVMValueRef x = LLVMGetUser(u);
-                    LLVMDumpValue(x);
-                    printf("\n");
-                }
+    LLVMValueRef instIter = LLVMGetNextInstruction(instA);
+    while (instIter != instB) {
+        if (LLVMIsAStoreInst(instIter) && LLVMGetOperand(instIter, 1) == LLVMGetOperand(instA, 0)) {
+            return false;
+        }
+        instIter = LLVMGetNextInstruction(instIter);
+    }
+
+    return true;
+}
+
+/* Removes the dead code from the basic block. */
+void deadCodeElimination(LLVMBasicBlockRef bb) {
+    printf("Dead code elimination...\n");
+    LLVMValueRef instIter = LLVMGetFirstInstruction(bb);
+    while (instIter) {
+        LLVMValueRef nextInst = LLVMGetNextInstruction(instIter);
+        if (!LLVMIsAStoreInst(instIter) &&
+            !LLVMIsATerminatorInst(instIter) &&
+            !LLVMIsACallInst(instIter) &&
+            !LLVMIsAAllocaInst(instIter) &&
+            !LLVMGetFirstUse(instIter)) {
+            printf("Removing dead code: ");
+            LLVMDumpValue(instIter);
+            printf("\n");
+            LLVMInstructionEraseFromParent(instIter);
+        }
+        instIter = nextInst;
+    }
+}
+
+/* Performs constant folding on the basic block. */
+void constantFolding(LLVMBasicBlockRef bb) {
+    for (LLVMValueRef inst = LLVMGetFirstInstruction(bb); inst;
+         inst = LLVMGetNextInstruction(inst)) {
+        LLVMOpcode op = LLVMGetInstructionOpcode(inst);
+        if ((op == LLVMAdd || op == LLVMSub || op == LLVMMul) &&
+            LLVMIsConstant(LLVMGetOperand(inst, 0)) &&
+            LLVMIsConstant(LLVMGetOperand(inst, 1))) {
+            LLVMValueRef constOp1 = LLVMGetOperand(inst, 0);
+            LLVMValueRef constOp2 = LLVMGetOperand(inst, 1);
+            LLVMValueRef constResult = NULL;
+
+            if (op == LLVMAdd) {
+                constResult = LLVMConstAdd(constOp1, constOp2);
+            } else if (op == LLVMSub) {
+                constResult = LLVMConstSub(constOp1, constOp2);
+            } else if (op == LLVMMul) {
+                constResult = LLVMConstMul(constOp1, constOp2);
+            }
+
+            if (constResult != NULL) {
+                LLVMReplaceAllUsesWith(inst, constResult);
+            }
+        }
+    }
+}
+
+void walkBBInstructions(LLVMBasicBlockRef bb) {
+    for (LLVMValueRef instA = LLVMGetFirstInstruction(bb); instA;
+         instA = LLVMGetNextInstruction(instA)) {
+        for (LLVMValueRef instB = LLVMGetNextInstruction(instA); instB;
+             instB = LLVMGetNextInstruction(instB)) {
+            if (LLVMGetInstructionOpcode(instA) == LLVMGetInstructionOpcode(instB) &&
+                LLVMGetOperand(instA, 0) == LLVMGetOperand(instB, 0) &&
+                LLVMGetOperand(instA, 1) == LLVMGetOperand(instB, 1) &&
+                LLVMGetInstructionOpcode(instA) != LLVMAlloca &&
+                isSafeToReplace(instA, instB)) {
+                printf("Detected common subexpression\n");
+                LLVMDumpValue(instA);
+                LLVMDumpValue(instB);
+                LLVMReplaceAllUsesWith(instB, instA);
             }
         }
     }
@@ -71,6 +125,8 @@ void walkBasicblocks(LLVMValueRef function) {
          basicBlock = LLVMGetNextBasicBlock(basicBlock)) {
         printf("In basic block\n");
         walkBBInstructions(basicBlock);
+        constantFolding(basicBlock);
+        deadCodeElimination(basicBlock);
     }
 }
 
