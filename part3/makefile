@@ -1,10 +1,11 @@
 LLVMCODE = llvm_parser
 TEST_FILES = cfold_add.ll cfold_mul.ll cfold_sub.ll p2_common_subexpr.ll
+# TEST_FILES = p3_const_prop.ll
 OPTIMIZED_FILES = $(patsubst %.ll, %_opt.ll, $(TEST_FILES))
 TEST_DIR = optimizer_test_results
 
-$(LLVMCODE): $(LLVMCODE).c
-	gcc -g -I /usr/include/llvm-c-15/ -c $(LLVMCODE).c
+$(LLVMCODE): $(LLVMCODE).cpp
+	g++ -g -I /usr/include/llvm-c-15/ -c $(LLVMCODE).cpp
 	g++ $(LLVMCODE).o `llvm-config-15 --cxxflags --ldflags --libs core` -I /usr/include/llvm-c-15/ -o $@
 
 llvm_file: $(TEST).c
