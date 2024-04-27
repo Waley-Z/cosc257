@@ -1,0 +1,10 @@
+1. To generate an llvm file from a give c file use the following command:
+clang -S -emit-llvm (filename).c -o (filename).ll
+
+2. To complile and generate a.out for your optimized llvm file use the 
+following command:
+clang (filename).ll main.c
+
+3. Run the executable generated from both the optimized and the unoptimized 
+llvm to compare the outputs.
+ 
