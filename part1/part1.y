@@ -1,13 +1,10 @@
 %{
-#include <cstdio>
 #include "ast.h"
-#include "part1_semantic.cpp"
-extern int yylex();
-extern int yylex_destroy();
-void yyerror(const char *);
-extern FILE *yyin;
-extern int yylineno;
 
+extern int yylex();
+extern void yyerror(const char *);
+
+extern int yylineno;
 astNode* root;
 %}
 
@@ -156,29 +153,3 @@ terminal:
   | IDENTIFIER { $$ = createVar($1); free($1); }
 
 %%
-
-int main(int argc, char** argv){
-	if (argc == 2)
-  	    yyin = fopen(argv[1], "r");
-
-	yyparse();
-	
-    if (root != nullptr) {
-        printNode(root);
-        SemanticAnalyzer sa;
-        if (!sa.analyze(root)) {
-            return 1;
-        }
-        freeNode(root);
-    }
-
-	if (yyin != stdin)
-		fclose(yyin);
-	yylex_destroy();
-
-	return 0;
-}
-
-void yyerror(const char *) {
-    fprintf(stderr, "Syntax Error: line %d\n", yylineno);
-}

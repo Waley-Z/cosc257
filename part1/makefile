@@ -1,8 +1,8 @@
 source = part1
-$(source).out: $(source).l $(source).y
+$(source): $(source).l $(source).y semantic.cpp main.cpp
 	yacc -d $(source).y
 	lex $(source).l
-	g++ -o $(source).out lex.yy.c y.tab.c ast.cpp part1_semantic.cpp -g
+	g++ -o $@ lex.yy.c y.tab.c ast.cpp semantic.cpp main.cpp -g
 
 clean:
-	rm lex.yy.c y.tab.c y.tab.h $(source).out
+	rm lex.yy.c y.tab.c y.tab.h $(source)
