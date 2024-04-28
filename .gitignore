@@ -11,3 +11,5 @@ y.tab.h
 llvm_parser
 test_new.ll
 test.ll
+global_constprop_opt_example.csv
+task.md

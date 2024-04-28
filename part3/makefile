@@ -1,6 +1,6 @@
 LLVMCODE = llvm_parser
-TEST_FILES = cfold_add.ll cfold_mul.ll cfold_sub.ll p2_common_subexpr.ll
-# TEST_FILES = p3_const_prop.ll
+# TEST_FILES = cfold_add.ll cfold_mul.ll cfold_sub.ll p2_common_subexpr.ll
+TEST_FILES = p3_const_prop.ll p4_const_prop.ll p5_const_prop.ll
 OPTIMIZED_FILES = $(patsubst %.ll, %_opt.ll, $(TEST_FILES))
 TEST_DIR = optimizer_test_results
 
@@ -12,7 +12,8 @@ llvm_file: $(TEST).c
 	clang-15 -S -emit-llvm $(TEST).c -o $(TEST).ll
 
 run: $(LLVMCODE) $(addprefix $(TEST_DIR)/, $(TEST_FILES))
-	@for test_file in $(TEST_FILES); do \
+	@all_passed=true; \
+	for test_file in $(TEST_FILES); do \
 		./$(LLVMCODE) $(TEST_DIR)/$$test_file; \
 		tail -n +2 test_new.ll > test_new_stripped.ll; \
 		tail -n +2 $(TEST_DIR)/$${test_file%.*}_opt.ll > $${test_file%.*}_opt_stripped.ll; \
@@ -20,10 +21,16 @@ run: $(LLVMCODE) $(addprefix $(TEST_DIR)/, $(TEST_FILES))
 			echo "$$test_file passed\n"; \
 		else \
 			echo "$$test_file failed\n"; \
+			all_passed=false; \
 			diff -u test_new.ll $(TEST_DIR)/$${test_file%.*}_opt.ll; \
 		fi; \
 		rm -f test_new_stripped.ll $${test_file%.*}_opt_stripped.ll; \
-	done
+	done; \
+	if $$all_passed; then \
+		echo "All tests passed!"; \
+	else \
+		echo "Some tests failed."; \
+	fi
 
 clean: 
 	rm -rf $(TEST).ll
