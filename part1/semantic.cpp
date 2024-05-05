@@ -18,7 +18,7 @@ bool SemanticAnalyzer::analyze(astNode* root) {
     try {
         traverse(root);
         return true;
-    } catch (runtime_error& e) {
+    } catch (const runtime_error& e) {
         cerr << "Semantic error: " << e.what() << endl;
         return false;
     }

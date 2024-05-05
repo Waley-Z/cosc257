@@ -4,9 +4,9 @@ TEST_FILES = p3_const_prop.ll p4_const_prop.ll p5_const_prop.ll
 OPTIMIZED_FILES = $(patsubst %.ll, %_opt.ll, $(TEST_FILES))
 TEST_DIR = optimizer_test_results
 
-$(LLVMCODE): $(LLVMCODE).cpp
-	g++ -g -I /usr/include/llvm-c-15/ -c $(LLVMCODE).cpp
-	g++ $(LLVMCODE).o `llvm-config-15 --cxxflags --ldflags --libs core` -I /usr/include/llvm-c-15/ -o $@
+$(LLVMCODE): $(LLVMCODE).cpp main.cpp
+	g++ -g -I /usr/include/llvm-c-15/ -c $(LLVMCODE).cpp main.cpp
+	g++ $(LLVMCODE).o main.o `llvm-config-15 --cxxflags --ldflags --libs core` -I /usr/include/llvm-c-15/ -o $@
 
 llvm_file: $(TEST).c
 	clang-15 -S -emit-llvm $(TEST).c -o $(TEST).ll

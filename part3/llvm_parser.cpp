@@ -1,3 +1,5 @@
+#include "llvm_parser.h"
+
 #include <llvm-c/Core.h>
 #include <llvm-c/IRReader.h>
 #include <llvm-c/Types.h>
@@ -366,26 +368,18 @@ void walkGlobalValues(LLVMModuleRef module) {
     }
 }
 
-int main(int argc, char** argv) {
-    LLVMModuleRef m;
-
-    if (argc == 2) {
-        m = createLLVMModel(argv[1]);
-    } else {
-        m = NULL;
-        return 1;
-    }
+void llvm_parse(char* llFile, const char* outFile) {
+    LLVMModuleRef m = createLLVMModel(llFile);
 
     if (m != NULL) {
         // LLVMDumpModule(m);
         walkGlobalValues(m);
         walkFunctions(m);
-        LLVMPrintModuleToFile(m, "test_new.ll", NULL);
+        LLVMPrintModuleToFile(m, outFile, NULL);
         LLVMDisposeModule(m);
     } else {
         fprintf(stderr, "m is NULL\n");
     }
 
     LLVMShutdown();
-    return 0;
 }

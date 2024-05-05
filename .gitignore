@@ -5,6 +5,7 @@ lex.yy.c
 y.tab.c
 y.tab.h
 *.out
+part1/part1
 
 *.tar
 *.o
@@ -13,3 +14,4 @@ test_new.ll
 test.ll
 global_constprop_opt_example.csv
 task.md
+main
