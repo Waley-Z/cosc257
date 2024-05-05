@@ -148,11 +148,13 @@ void yyerror(const char*) {
     fprintf(stderr, "Syntax Error: line %d\n", yylineno);
 }
 
-void runParser(const char* filename) {
+bool runParser(const char* filename) {
     yyin = fopen(filename, "r");
-    yyparse();
+    int result = yyparse();
     fclose(yyin);
     yylex_destroy();
+
+    return result == 0;
 }
 
 bool runSemanticAnalysis() {

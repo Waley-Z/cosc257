@@ -11,7 +11,11 @@ int main(int argc, char** argv) {
     char* cFile = argv[1];
     char* llFile = argv[2];
 
-    runParser(cFile);
+    if (!runParser(cFile)) {
+        cerr << "Parsing failed." << endl;
+        return 1;
+    }
+
     if (!runSemanticAnalysis()) {
         cerr << "Semantic analysis failed." << endl;
         return 1;

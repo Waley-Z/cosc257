@@ -33,7 +33,7 @@ class SemanticAnalyzer {
 };
 
 void yyerror(const char*);
-void runParser(const char* filename);
+bool runParser(const char* filename);
 bool runSemanticAnalysis();
 
 #endif  // SEMANTIC_H

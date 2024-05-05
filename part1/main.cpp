@@ -7,7 +7,9 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    runParser(argv[1]);
+    if (!runParser(argv[1])) {
+        return 1;
+    }
 
     if (!runSemanticAnalysis()) {
         return 1;
