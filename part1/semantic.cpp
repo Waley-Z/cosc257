@@ -157,15 +157,14 @@ bool runParser(const char* filename) {
     return result == 0;
 }
 
-bool runSemanticAnalysis() {
-    if (root != nullptr) {
-        printNode(root);
-        SemanticAnalyzer sa;
-        if (!sa.analyze(root)) {
-            freeNode(root);
-            return false;
-        }
-        freeNode(root);
-    }
-    return true;
+bool runSemanticAnalysis(bool cleanup) {
+    if (!root) return true;
+
+    printNode(root);
+    SemanticAnalyzer sa;
+    bool result = sa.analyze(root);
+    
+    if (cleanup) freeNode(root);
+    
+    return result;
 }

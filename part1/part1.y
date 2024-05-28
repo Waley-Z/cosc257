@@ -18,7 +18,7 @@ astNode* root;
 %token <idname> IDENTIFIER PRINT READ
 %token <ival> NUMBER
 %token INT VOID IF ELSE WHILE RETURN EXTERN
-%token LT GT LE GE EQ
+%token LT GT LE GE EQ NEQ
 
 %type <svec_ptr> statements var_declarations
 %type <nptr> program extern_declaration function block
@@ -130,6 +130,7 @@ condition:
   | expression EQ expression { $$ = createRExpr($1, $3, eq); }
   | expression GE expression { $$ = createRExpr($1, $3, ge); }
   | expression LE expression { $$ = createRExpr($1, $3, le); }
+  | expression NEQ expression { $$ = createRExpr($1, $3, neq); }
 
 expression:
     terminal { $$ = $1; }
