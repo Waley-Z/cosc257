@@ -27,7 +27,7 @@ typedef unordered_map<LLVMBasicBlockRef, vector<LLVMBasicBlockRef>> BBPredMap;
          data-structures that we can works on for optimization phase.
 */
 
-LLVMModuleRef createLLVMModel(char* filename) {
+LLVMModuleRef createLLVMModel(const char* filename) {
     char* err = 0;
 
     LLVMMemoryBufferRef ll_f = 0;
@@ -368,7 +368,7 @@ void walkGlobalValues(LLVMModuleRef module) {
     }
 }
 
-void llvm_parse(char* llFile, const char* outFile) {
+void llvm_parse(const char* llFile, const char* outFile) {
     LLVMModuleRef m = createLLVMModel(llFile);
 
     if (m != NULL) {

@@ -6,5 +6,5 @@ int main(int argc, char** argv) {
         std::cerr << "Usage: " << argv[0] << " <testfile>.ll" << std::endl;
     }
     
-    llvm_parse(argv[1], "test_new.ll");
+    llvm_parse(argv[1], "test_new.ll", true);
 }
